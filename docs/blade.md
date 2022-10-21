@@ -124,6 +124,8 @@ Se elimina la restricción de ruta y se crea un nuevo metodo en el modelos `Post
 ```
 ---
 
+Se modifica la ruta en el archivo `web.php` del folder de `Routes`
+
 ```php
 Route::get('posts/{post}', function ($slug) {
 
