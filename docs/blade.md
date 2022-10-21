@@ -4,27 +4,31 @@
 
 ## Blade: The Absolute Basics
 
-Apreder de Blade, un motor de plantillas para las vista de Laravel.Se modifica las vistas, principalmente cambiando ´php <?= ´ por ´{{ }}´. Por ejemplo=
+Apreder de Blade, un motor de plantillas para las vista de Laravel.Se modifica las vistas, principalmente cambiando `php <?= ` por `{{ }}`. Por ejemplo=
 
-´´´php
+Se modifica la vista `post.blade.php` con el siguiente codigo: 
+
+```php
 {{$post->title}}
 
    <div>
         {!! $post->body !!}
     </div>
-´´´
+```
   ----
 
-´´´php
-@foreach ($posts as $post)
-    <article>
+Y también la vista `posts.blade.php` con el siguiente contenido:
+```php
+<body> 
+    
+        @foreach ($posts as $post)
+    <article class="{{$loop->even ? 'foobar' : '' }}">
         <h1>
         <a href="/posts/{{$post->slug}}">
-{{$post->title }}
+             {{$post->title }}
 
         </a>
     </h1>
-
 
         <div>
             {{$post->excerpt}}
@@ -33,13 +37,16 @@ Apreder de Blade, un motor de plantillas para las vista de Laravel.Se modifica l
     </article>
 
 @endforeach
-´´´
+  
+       
+</body>
+```
 
 ## Blade Layouts Two Ways
 
-Cuando agregamos una nueva hoja de estilo, debemos actualizar cada vista. Así, que se enseñará la forma de crear diseños para reducir la duplicación en los archivos de diseño. Se agrega un nueva vista llamada ´layout.blade.php´ en folder llamado ´component´ en la carpeta de ´views´, con el siguiente contenido.
+Cuando agregamos una nueva hoja de estilo, debemos actualizar cada vista. Así, que se enseñará la forma de crear diseños para reducir la duplicación en los archivos de diseño. Se agrega un nueva vista llamada `layout.blade.php` en folder llamado `component` en la carpeta de `views`, con el siguiente contenido.
 
-´´´php
+```php
 <!DOCTYPE html>
 
 <Title>My Blog</Title>
@@ -49,31 +56,32 @@ Cuando agregamos una nueva hoja de estilo, debemos actualizar cada vista. Así, 
     {{$slot}}
 
 </body>
-´´´
+```
 
 ## A Few Tweaks and Consideration
 
-Se elimina la restricción de ruta y se crea un nuevo metodo en el modelos ´Post´ llamado ´findOrFail´ que servirá para cancelar automaticamente cualquier publicación que no coincida con el slug dado.
+Se elimina la restricción de ruta y se crea un nuevo metodo en el modelos `Post` llamado `findOrFail` que servirá para cancelar automaticamente cualquier publicación que no coincida con el slug dado.
 
-´´´php
+```php
  public static function findOrFail($slug)
     {
 
         $post= static::find($slug);
         if(! $post){
             throw new ModelNotFoundException();
+        
         }
         return $post;
     }
 
-´´´
+```
 ---
 
-´´´php
+```php
 Route::get('posts/{post}', function ($slug) {
 
     return view('post', [
         'post' => Post::findOrFail($slug)
     ]);
 });
-´´´
+```
