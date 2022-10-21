@@ -6,6 +6,27 @@
 
 Se analiza los aspectos esenciales de los archivos de entorno y luego pasaremos a la conexión a una base de datos MySQL. Se instala la base de datos mysql, se crea una base de datos llamada ´laravel´, con el usuario ´vagrant´ y la contraseña ´secret´, se corren la migraciones con el comando ´ṕhp artisan migrate´ en la máquina virtual vagrant de ´lfts.isw811.xyz´
 
+Comandos para crear la base de datos 
+
+    sudo mysql -- Conectarse a la base de datos.
+    show databases; --  Ver las bases de datos creadas. 
+    create database laravel; --Crear la base de datos.
+    create user vagrant identified by 'secret'; --Crear usuario y contraseña.
+    grant all privileges on laravel.* to vagrant; --Dar todos los privilegios al usuario sobre una base de dato
+    flush privileges; --Recargar privilegios. 
+    mysql -u vagrant -p --Conectarme a la base de datos con las credenciales creadas. 
+    quit -- Salir de la base de datos.
+
+Se edita el archivo `.env`.
+
+    DB_CONNECTION=mysql
+    DB_HOST=127.0.0.1
+    DB_PORT=3306
+    DB_DATABASE=laravel
+    DB_USERNAME=vagrant
+    DB_PASSWORD= secret
+
+
 ## Migrations: The Absolute Basics
 
 Después de preparar el entorno de mysql se comenzará aprende de las clases de migraciones.
