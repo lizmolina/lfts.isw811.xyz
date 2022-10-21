@@ -298,6 +298,57 @@ class Post{
 Se descarga un paquete de ´composer´ que nos ayude a leer el formato de metadatos ´Yaml Front Matter´.
 con el siguiente comando ´ composer require spatie/yaml-front-matter´ en la maquina virtual de vangrant de lfts@isw811.xyz.
 
+
+Se modifica el modelo llamado `Post.php` en la carpeta `Models`, con el siguiente contenido.
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\File;
+use Spatie\YamlFrontMatter\YamlFrontMatter;
+
+class Post{
+
+    public $title;
+    public $excerpt;
+    public $date;
+    public $body;
+    public $slug;
+
+    public function __construct($title, $excerpt, $date, $body, $slug)
+    {
+        $this->title = $title;
+        $this->excerpt = $excerpt;
+        $this->date= $date;
+        $this->body= $body;
+        $this->slug= $slug;
+    }
+
+    public static function all(){
+        
+        return collect(File::files(resource_path("posts")))
+        ->map(fn($file)=>YamlFrontMatter::parseFile($file))
+        ->map(fn($document)=>  new Post(
+            $document->title,
+            $document->excerpt,
+            $document->date,
+            $document->body(),
+            $document->slug
+
+        ));
+        
+    }
+
+    public static function find($slug)
+    {
+        return static::all()->firstWhere('slug', $slug);
+
+    }
+    ```
+
 ## Collection Sorting and Caching Refresher
 
 Se ordena el post de acuerdo a la fecha de publicación, administrar el almacenamiento del cache. Se modifica la primera y ultima linea de la funcion ´all()´ en el  modelo ´Post´, con el siguiente código.
