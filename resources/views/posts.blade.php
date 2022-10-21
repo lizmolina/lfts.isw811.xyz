@@ -1,14 +1,10 @@
-<!DOCTYPE html>
+<x-layout>
 
-<Title>My Blog</Title>
-<link rel="stylesheet" href="/css/app.css">
-<body> 
-    
-        @foreach ($posts as $post)
-    <article class="{{$loop->even ? 'foobar' : '' }}">
+   @foreach ($posts as $post)
+    <article>
         <h1>
         <a href="/posts/{{$post->slug}}">
-{{$post->title }}
+            {!!$post->title !!}
 
         </a>
     </h1>
@@ -19,8 +15,6 @@
         </div>
 
     </article>
+   @endforeach
 
-@endforeach
-  
-       
-</body>
+</x-layout>

@@ -58,6 +58,53 @@ Cuando agregamos una nueva hoja de estilo, debemos actualizar cada vista. Así, 
 </body>
 ```
 
+Se modifica la vista `posts.blade.php` de la siguiente forma
+
+```php
+ <x-layout>
+
+   @foreach ($posts as $post)
+    <article>
+        <h1>
+        <a href="/posts/{{$post->slug}}">
+            {!!$post->title !!}
+
+        </a>
+    </h1>
+
+
+        <div>
+            {{$post->excerpt}}
+        </div>
+
+    </article>
+   @endforeach
+
+</x-layout>
+```
+
+Ademas, se modifica la vista `post.blade.php` de la siguiente forma
+
+```php
+<x-layout>
+
+    <article>
+       <h1>
+        {!! $post->title !!}
+      </h1>
+
+      <div>
+        {!! $post->body !!}
+      </div>
+
+    </article>
+
+    <a href="/">Go Back</a>
+
+</x-layout>
+
+```
+
 ## A Few Tweaks and Consideration
 
 Se elimina la restricción de ruta y se crea un nuevo metodo en el modelos `Post` llamado `findOrFail` que servirá para cancelar automaticamente cualquier publicación que no coincida con el slug dado.
