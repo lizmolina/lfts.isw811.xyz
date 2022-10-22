@@ -31,9 +31,11 @@ Se edita el archivo `.env`.
 
 Después de preparar el entorno de mysql se comenzará aprende de las clases de migraciones.
 Se prueban los comandos:
-´ṕhp artisan migrate:rollback´
-´php artisan migrate´
-´php artisan migrate:fresh´
+
+    ṕhp artisan migrate:rollback ---revierte la última migración en la base de datos
+    php artisan migrate ---crea la migración de un tabla en laravel
+    php artisan migrate:fresh --actualiza la migraciones en la base de datos
+    
 
 ## Eloquent and the Active Record Pattern
 

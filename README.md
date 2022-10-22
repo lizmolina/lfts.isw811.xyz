@@ -5,6 +5,8 @@
 
 [The basics](./docs/the-basics.md)
 [Blade](./docs/blade.md)
+[Working With Databases](./docs/working-with-databases.md)
+
 
 
 
