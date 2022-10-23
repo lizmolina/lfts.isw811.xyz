@@ -73,6 +73,15 @@ Post::all(), Post::count(), Post::find(1)´.
 
 Se analizará todo lo que se necesita saber sobre las vulnerabilidades de asignación masiva. Como verá, Laravel proporciona un par de formas de especificar qué atributos pueden o no asignarse en masa. Sin embargo, hay una tercera opción al final de este video que es igualmente válida. 
 
+Con el siguiente comando se crean nuevos `posts` en la base de datos
+
+    Post::create(['title' => 'My Fourth Post', 'excerpt' => 'excerpt of post', 'body'=> 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Iste provident doloribus est officiis reiciendis magni a perferendis ratione dolorum ipsa animi, culpa ullam amet dignissimos vero commodi autem molestias suscipit.']);
+
+Y con este comando podemos actualizar registros en la base de datos
+
+    $post-> update(['excerpt' => 'Changed'])
+
+
 ## Route Model Binding
 
 La función de vinculación del modelo de ruta de Laravel nos permite vincular un comodín de ruta a una instancia de modelo Eloquent, se crea una funcion en el modelos ´Post´, con el siguiente codigo para que retorne el ´slug´ y se modifica la funcion de rutas, en  ´web.php´. 
