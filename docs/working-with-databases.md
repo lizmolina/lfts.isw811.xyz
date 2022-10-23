@@ -35,11 +35,20 @@ Se prueban los comandos:
     ṕhp artisan migrate:rollback ---revierte la última migración en la base de datos
     php artisan migrate ---crea la migración de un tabla en laravel
     php artisan migrate:fresh --actualiza la migraciones en la base de datos
-    
+
 
 ## Eloquent and the Active Record Pattern
 
 Ahora veremos Eloquent, que es la implementación de Active Record de Laravel, esto nos  permite asignar un registro de tabla de base de datos a un objeto Aprederemos a usar la API inicial.  Utilizamos ´php artisan tinker´ para crear usuarios, modificar modelos, y acceder a la tablas.
+
+    php artisan tinker --- creamos y seleccionamos usuarios en las bases de datos. 
+    $user = new App\Model\User;
+    $user ->name= 'Ana';
+    $user ->email? 'ana@gmail.com';
+    $user -> password = bcrypt('!password');
+    $user ->save();
+    $user
+    $User :: find(1);
 
 ## Make a Post Model and Migration
 
