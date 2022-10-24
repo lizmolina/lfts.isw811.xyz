@@ -481,3 +481,28 @@ Se agrega la siguiente linea a la función `definition` en  `UserFactory.php`.
 
  Aprender qué relaciones deben cargarse de forma predeterminada en un modelo. También hablaremos de los pros y los contras de este enfoque. 
 
+Para esto primero modificamos la route `web.php`, de `User` y `Category`. Agregando la siguiente linea 
+`>load(['category','author' ])`
+
+
+```php
+Route::get('authors/{author:username}', function (User $author) {
+
+    return view('posts', [
+        'posts' => $author->load(['category','author' ])
+    ]);
+});
+
+Route::get('categories/{category:slug}', function (Category $category) {
+
+    return view('posts', [
+        'posts' => $category->posts->load(['category','author' ])
+    ]);
+});
+```
+
+Luego lo eliminamos y agregamos la funcion que realiza dicha linea en el modelo `Post`, con la siguiente propiedad. 
+
+```php
+protected $with = ['category', 'author'];
+```
