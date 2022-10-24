@@ -187,6 +187,35 @@ Y finalmente para cada una de las vistas `post.blade.php` y `posts.blade.php` se
 
 Con la categoría lista en la  aplicación, se crea una nueva ruta que obtenga y cargue todas las publicaciones asociadas con la categoría dada.
 
+Se inserta la nueva ruta en la carpeta de `routes`, en el archivo `web.php`. 
+
+```php
+Route::get('categories/{category:slug}', function (Category $category) {
+
+    return view('posts', [
+        'posts' => $category->posts
+    ]);
+});
+```
+
+
+Se mueve la siguiente función al modelo `Category`
+
+```php
+public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+```
+
+Se modifica la vista `posts.blade.php` y `post.blade.php`
+
+```html
+<p>
+    <a href="/categories/{{$post->category->slug}}">{{$post->category->name}}</a>
+</p>
+```
+
 ## Clockwork, and the N+1 Problem
 
 Se introduce un problema de rendimiento que se conoce como el problema N+1. Debido a que las relaciones de carga diferida de Laravel, esto significa que potencialmente puede caer en una trampa en la que se ejecuta una consulta SQL adicional para cada elemento dentro de un bucle. Cincuenta elementos... cincuenta consultas SQL. A continuación,  veremos cómo depurar estas consultas, tanto manualmente como con la extensión Clockwork. 
