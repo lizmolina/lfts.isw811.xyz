@@ -453,6 +453,30 @@ En `php artisan tinker` se corre el siguiente comando
 
  Crear una nueva ruta que represente todas las publicaciones de blog escritas por un autor en particular. 
 
+Se crea una nueva ruta en el archivo `web.php`
+
+```php
+Route::get('authors/{author:username}', function (User $author) {
+
+    return view('posts', [
+        'posts' => $author->posts
+    ]);
+});
+```
+
+Se agrega la ruta a las vistas `post.blade.php` y `posts.blade.php`
+
+```html
+  <p>
+        By <a href="/authors/{{$post->author->username}}">{{$post->author->name}} </a> in <a href="/categories/{{$post->category->id}}">{{$post->category->name}}</a>
+  </p>
+```
+
+Se agrega la siguiente linea a la función `definition` en  `UserFactory.php`.
+
+    'username' => $this->faker->unique()->userName,
+
+
  ## Eager Load Relationships on an Existing Model
 
  Aprender qué relaciones deben cargarse de forma predeterminada en un modelo. También hablaremos de los pros y los contras de este enfoque. 
