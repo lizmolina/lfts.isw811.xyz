@@ -353,7 +353,101 @@ Y la función al modelo `User.php`
 
 ## Turbo Boost With Factories
 
-Se integran fábricas de modelos para generar sin problemas cualquier número de registros de bases de datos. 
+Se integran fábricas de modelos para generar sin problemas cualquier número de registros de bases de datos.
+
+Se corren los siguientes comandos para crear los factories de `PostFactory.php` y `CategoryFactory`
+
+    php artisan make:factory PostFactory ---crear Factory
+    php artisan make:factory CategoryFactory --crear Factory
+    php artisan migrate:fresh --seed refrescamos la base de datos y insertamos datos automaticamente
+    php artisan tinker-- insertamos datos a la base de forma manual
+
+Se agrega el siguiente contenido a `PostFactory.php`
+
+```php
+public function definition()
+    {
+        return [
+            'user_id' => User:: factory(),
+            'category_id' => Category::factory(),
+            'title' => $this->faker->sentence,
+            'slug' => $this->faker->slug,
+            'excerpt' => $this->faker->sentence,
+            'body'=> $this->faker->paragraph
+        ];
+    }
+```
+Se agrega el siguiente contenido a `CategoryFactory`
+
+```php
+ public function definition()
+    {
+        return [
+            'name' =>$this->faker->word,
+            'slug' =>$this->faker->slug
+        ];
+    }
+```
+
+Se modifica durante la sesión del videl el archivo `DatabaseSeeder.php`
+
+```php
+public function run()
+    {
+
+        $user =User::factory()->create([
+            'name'=> 'John Doe'
+
+        ]);
+
+         Post::factory()->create([
+            'user_id' => $user->id
+         ]);
+
+        // $personal = Category:: create([
+
+        //     'name' => 'Personal',
+        //     'slug'=> 'personal'
+        // ]);
+
+        // $family= Category:: create([
+
+        //     'name' => 'Family',
+        //     'slug'=> 'family'
+        // ]);
+
+        // $work= Category:: create([
+
+        //     'name' => 'Work',
+        //     'slug'=> 'work'
+        // ]);
+
+        // Post::create([
+        //     'user_id' => $user->id,
+        //     'category_id' => $family->id,
+        //     'title' => 'My Family Post',
+        //     'slug'=> 'my-family-post',
+        //     'excerpt' => '<p> Excerpt for my post </p> ',
+        //     'body'=> '<p> Lorem ipsum dolor sit amet consectetur adipisicing elit.Iste provident doloribus est       officiis reiciendis magni a perferendis ratione dolorum ipsa animi, culpa ullam amet dignissimos vero commodi autem moles
+        //     tias suscipit.</p>'
+        // ]);
+
+        // Post::create([
+        //     'user_id' => $user->id,
+        //     'category_id' => $work->id,
+        //     'title' => 'My Work Post',
+        //     'slug'=> 'my-work-post',
+        //     'excerpt' => '<p> Excerpt for my post</p> ',
+        //     'body'=> '<p>Lorem ipsum dolor sit amet consectetur adipisicing elit.Iste provident doloribus est       officiis reiciendis magni a perferendis ratione dolorum ipsa animi, culpa ullam amet dignissimos vero commodi autem moles
+        //     tias suscipit. </p>'
+        // ]);
+    }
+```
+
+En `php artisan tinker` se corre el siguiente comando
+
+    App\Models\Post::factory()->create();  --- metodo para insertar post de manera automatica. 
+
 
 ## View All Posts By An Author
 

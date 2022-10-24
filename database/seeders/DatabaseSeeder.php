@@ -16,50 +16,55 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        User::truncate();
-        Category:: truncate();
-        Post::truncate();
 
 
-        $user= User::factory()->create();
 
-        $personal = Category:: create([
+        $user =User::factory()->create([
+            'name'=> 'John Doe'
 
-            'name' => 'Personal',
-            'slug'=> 'personal'
         ]);
 
-        $family= Category:: create([
+         Post::factory()->create([
+            'user_id' => $user->id
+         ]);
 
-            'name' => 'Family',
-            'slug'=> 'family'
-        ]);
+        // $personal = Category:: create([
 
-        $work= Category:: create([
+        //     'name' => 'Personal',
+        //     'slug'=> 'personal'
+        // ]);
 
-            'name' => 'Work',
-            'slug'=> 'work'
-        ]);
+        // $family= Category:: create([
 
-        Post::create([
-            'user_id' => $user->id,
-            'category_id' => $family->id,
-            'title' => 'My Family Post',
-            'slug'=> 'my-family-post',
-            'excerpt' => '<p> Excerpt for my post </p> ',
-            'body'=> '<p> Lorem ipsum dolor sit amet consectetur adipisicing elit.Iste provident doloribus est       officiis reiciendis magni a perferendis ratione dolorum ipsa animi, culpa ullam amet dignissimos vero commodi autem moles
-            tias suscipit.</p>'
-        ]);
+        //     'name' => 'Family',
+        //     'slug'=> 'family'
+        // ]);
 
-        Post::create([
-            'user_id' => $user->id,
-            'category_id' => $work->id,
-            'title' => 'My Work Post',
-            'slug'=> 'my-work-post',
-            'excerpt' => '<p> Excerpt for my post</p> ',
-            'body'=> '<p>Lorem ipsum dolor sit amet consectetur adipisicing elit.Iste provident doloribus est       officiis reiciendis magni a perferendis ratione dolorum ipsa animi, culpa ullam amet dignissimos vero commodi autem moles
-            tias suscipit. </p>'
-        ]);
+        // $work= Category:: create([
+
+        //     'name' => 'Work',
+        //     'slug'=> 'work'
+        // ]);
+
+        // Post::create([
+        //     'user_id' => $user->id,
+        //     'category_id' => $family->id,
+        //     'title' => 'My Family Post',
+        //     'slug'=> 'my-family-post',
+        //     'excerpt' => '<p> Excerpt for my post </p> ',
+        //     'body'=> '<p> Lorem ipsum dolor sit amet consectetur adipisicing elit.Iste provident doloribus est       officiis reiciendis magni a perferendis ratione dolorum ipsa animi, culpa ullam amet dignissimos vero commodi autem moles
+        //     tias suscipit.</p>'
+        // ]);
+
+        // Post::create([
+        //     'user_id' => $user->id,
+        //     'category_id' => $work->id,
+        //     'title' => 'My Work Post',
+        //     'slug'=> 'my-work-post',
+        //     'excerpt' => '<p> Excerpt for my post</p> ',
+        //     'body'=> '<p>Lorem ipsum dolor sit amet consectetur adipisicing elit.Iste provident doloribus est       officiis reiciendis magni a perferendis ratione dolorum ipsa animi, culpa ullam amet dignissimos vero commodi autem moles
+        //     tias suscipit. </p>'
+        // ]);
     }
 
 
