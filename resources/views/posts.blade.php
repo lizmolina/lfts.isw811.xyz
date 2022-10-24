@@ -7,7 +7,12 @@
             {!!$post->title !!}
 
         </a>
-    </h1>
+        </h1>
+
+        <p>
+            <a href="#">{{$post->category->name}}</a>
+        </p>
+
 
 
         <div>

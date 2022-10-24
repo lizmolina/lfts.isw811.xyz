@@ -86,14 +86,14 @@ Y con este comando podemos actualizar registros en la base de datos
 
 La función de vinculación del modelo de ruta de Laravel nos permite vincular un comodín de ruta a una instancia de modelo Eloquent, se crea una funcion en el modelos ´Post´, con el siguiente codigo para que retorne el ´slug´ y se modifica la funcion de rutas, en  ´web.php´. 
 
-´´´php
+```php
   public function getRouteKeyName()
     {
         return 'slug';
     }
-´´´
+```
 
-´´´php 
+```php 
 
 Route::get('posts/{post:slug}', function (Post $post) {
 
@@ -101,7 +101,7 @@ Route::get('posts/{post:slug}', function (Post $post) {
         'post' => $post
     ]);
 });
-´´´
+```
 Se refresca la base de datos con 
 
     php artisan migrate:fresh 
@@ -114,6 +114,74 @@ Luego se vuelven a insertar cada uno de los `posts` con el siguiente comando, en
 ## Your First Eloquent Relationship
 
 La siguiente tarea es asignar una categoría a cada publicación. Para permitir esto, necesitaremos crear un nuevo modelo Eloquent y una migración para representar una Categoría. 
+
+Se corren los siguientes comandos en la maquina `vagrant`, a la siguiente ruta `cd /vagrant/sites/lfts.isw811.xyz` para crear el modelo y tabla de  `Category`. 
+
+    php artisan make:migration create_categories_table --se crea la tabla en la base de datos
+    php artisan make:model Category -m --se crea el modelo
+    php artisan migrate:fresh -- se refresca la base de datos
+
+Luego insertamos los nuevos datos en la base de datos, por medio del comando `php artisan tinker`, primero ingresamos los datos de `Category` y luego de `Post`.
+
+    use App\Models\Category;
+    $c = new Category;           -----------------Con cada una de las categorias a insertar 
+    $c->name= 'Personal';
+    $c->slug = 'personal';
+    $c->save();
+
+    use App\Models\Post;
+    Post::create(['title' => 'My Family Post', 
+    'excerpt' => 'Excerpt for my post', 
+    'body'=> 'Lorem ipsum dolor sit amet consectetur adipisicing elit.Iste provident doloribus est       officiis reiciendis magni a perferendis ratione dolorum ipsa animi, culpa ullam amet dignissimos vero commodi autem moles
+    tias suscipit.', 
+    'slug'=> 'my-family-post',
+    'category_id'=> 1]);
+
+Se modifica el modelo `Post`, agregando la siguiente funcion.
+
+```php
+public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+```
+
+Para las migraciones de `posts` y `categories`, quedan la siguiente forma 
+
+```php
+public function up()
+    {
+        Schema::create('categories', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('slug');
+            $table->timestamps();
+        });
+    }
+```
+
+```php
+ public function up()
+    {
+        Schema::create('posts', function (Blueprint $table) {
+            $table->id();
+            $table-> foreignId('category_id');
+            $table->string('slug')->unique();
+            $table->string('title');
+            $table->text('excerpt');
+            $table->text('body');
+            $table->timestamps();
+            $table->timestamp('published_at')->nullable();
+        });
+    }
+```
+
+Y finalmente para cada una de las vistas `post.blade.php` y `posts.blade.php` se agrega el siguiente codigo debajo del titilo del post. 
+
+```html
+<p>
+     <a href="#">{{$post->category->name}}</a> 
+```
 
 ## Show All Posts Associated With a Category
 
