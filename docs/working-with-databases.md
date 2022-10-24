@@ -94,6 +94,7 @@ La función de vinculación del modelo de ruta de Laravel nos permite vincular u
 ´´´
 
 ´´´php 
+
 Route::get('posts/{post:slug}', function (Post $post) {
 
     return view('post', [
@@ -101,6 +102,15 @@ Route::get('posts/{post:slug}', function (Post $post) {
     ]);
 });
 ´´´
+Se refresca la base de datos con 
+
+    php artisan migrate:fresh 
+
+Luego se vuelven a insertar cada uno de los `posts` con el siguiente comando, en la base de datos `mariadb`
+
+    insert into posts (id  , slug , title, excerpt, body, created_at,  updated_at, published_at)  VALUES (3,'my-third-post ' ,  'My <strong>Third</strong>Post', 'Lorem ipsum dolor sit amet consectetur adipisicing elit.', '<p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quo saepe non soluta nobis similique numquam ullam error nisi iusto eum, exercitationem ad accusamus quibusdam iure. Exercitationem excepturi ab officiis odit</p>', '2022-02-02 18:13:28', '2022-02-03 15:13:28', NULL);
+
+
 ## Your First Eloquent Relationship
 
 La siguiente tarea es asignar una categoría a cada publicación. Para permitir esto, necesitaremos crear un nuevo modelo Eloquent y una migración para representar una Categoría. 
