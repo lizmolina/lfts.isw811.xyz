@@ -252,6 +252,105 @@ Route::get('/', function () {
 
 En este punto se asocia  una publicación de blog con un autor o usuario en particular. Pero, en el proceso de agregar esto, nuevamente nos encontramos con el problema de necesitar ingresar manualmente a nuestra base de datos. Se revisa la inicialización a la base de datos. 
 
+Agregamos el nombre del autor del `posts`, en `post.blade.php`. 
+
+```html
+<p>
+    By <a href="#">Jeffrey Way</a> in <a href="/categories/{{$post->category->id}}">{{$post->category->name}}</a>
+</p>
+```
+
+Para no estar insertando los datos manualmente, cada vez que reseteamos la base de datos, se usará los `Seeder` que funciona para iniciar las tablas con los datos. Para esto se ejecutara un serie de comandos y modificaciones en el código. 
+
+    php artisan migrate:fresh
+    php artisan db: seed --agregar registros a la base de datos automaticamente 
+    php artisan migrate:fresh --seed --refresca e inicia la base de datos
+    php artisan tinker  --- se chequea que los datos fueron insertados automaticamente. 
+
+Se modifica el archivo `DatabaseSeeder.php`
+
+
+```php
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use App\Models\User;
+use App\Models\Category;
+use App\Models\Post;
+
+class DatabaseSeeder extends Seeder
+{
+    /**
+     * Seed the application's database.
+     *
+     * @return void
+     */
+    public function run()
+    {
+        User::truncate();
+        Category:: truncate();
+        Post::truncate();
+
+
+        $user= User::factory()->create();
+
+        $personal = Category:: create([
+
+            'name' => 'Personal',
+            'slug'=> 'personal'
+        ]);
+
+        $family= Category:: create([
+
+            'name' => 'Family',
+            'slug'=> 'family'
+        ]);
+
+        $work= Category:: create([
+
+            'name' => 'Work',
+            'slug'=> 'work'
+        ]);
+
+        Post::create([
+            'user_id' => $user->id,
+            'category_id' => $family->id,
+            'title' => 'My Family Post',
+            'slug'=> 'my-family-post',
+            'excerpt' => '<p> Excerpt for my post </p> ',
+            'body'=> '<p> Lorem ipsum dolor sit amet consectetur adipisicing elit.Iste provident doloribus est       officiis reiciendis magni a perferendis ratione dolorum ipsa animi, culpa ullam amet dignissimos vero commodi autem moles
+            tias suscipit.</p>'
+        ]);
+
+        Post::create([
+            'user_id' => $user->id,
+            'category_id' => $work->id,
+            'title' => 'My Work Post',
+            'slug'=> 'my-work-post',
+            'excerpt' => '<p> Excerpt for my post</p> ',
+            'body'=> '<p>Lorem ipsum dolor sit amet consectetur adipisicing elit.Iste provident doloribus est       officiis reiciendis magni a perferendis ratione dolorum ipsa animi, culpa ullam amet dignissimos vero commodi autem moles
+            tias suscipit. </p>'
+        ]);
+    }
+
+}
+```
+Se agrega la función al modelo `Post.php`
+
+```php
+public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+```
+Y la función al modelo `User.php`
+
+```php
+ public function posts(){
+        return $this->hasMany(Post::class);
+    }
+```
+
 ## Turbo Boost With Factories
 
 Se integran fábricas de modelos para generar sin problemas cualquier número de registros de bases de datos. 

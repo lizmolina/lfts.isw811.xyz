@@ -16,7 +16,7 @@
 
 
         <div>
-            {{$post->excerpt}}
+            {!!$post->excerpt!!}
         </div>
 
     </article>
