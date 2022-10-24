@@ -220,6 +220,34 @@ Se modifica la vista `posts.blade.php` y `post.blade.php`
 
 Se introduce un problema de rendimiento que se conoce como el problema N+1. Debido a que las relaciones de carga diferida de Laravel, esto significa que potencialmente puede caer en una trampa en la que se ejecuta una consulta SQL adicional para cada elemento dentro de un bucle. Cincuenta elementos... cincuenta consultas SQL. A continuación,  veremos cómo depurar estas consultas, tanto manualmente como con la extensión Clockwork. 
 
+Depurar las consultas de forma manual
+
+    \Illuminate\Support\Facades\DB::listen(function ($query)
+        {
+            logger($query->sql);
+        }); 
+
+    \Illuminate\Support\Facades\DB::listen(function ($query)
+        {
+            logger($query->sql, $query->bindings);
+
+        });
+
+Depurar las consultas de forma automatica, en la  maquina virtual `vagrant`, en la `cd /vagrant/sites/lfts.isw811.xyz` corremos el comando para instalar Clockwork, además, agregamos la extesión a nuestro respectivo navegador y por medio de las herramietas para desarrollador, podemos observar el funcionamiento de clockwork. 
+
+    composer require itsgoingd/clockwork
+
+Y modificamos las route, en `web.php`, por medio del navegador podemos observar su funcionamiento. 
+
+```php
+Route::get('/', function () {
+
+    return view('posts', [
+        'posts' => Post::with('category')->get()
+    ]);
+});
+```
+
 ## Database Seeding Saves Time
 
 En este punto se asocia  una publicación de blog con un autor o usuario en particular. Pero, en el proceso de agregar esto, nuevamente nos encontramos con el problema de necesitar ingresar manualmente a nuestra base de datos. Se revisa la inicialización a la base de datos. 
