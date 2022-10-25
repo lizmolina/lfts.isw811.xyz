@@ -11,5 +11,6 @@
 
 ## Section 3
 
+[Search](./docs/search.md)
 
 ## Section 4
