@@ -615,13 +615,13 @@ Route::get('categories/{category:slug}', function (Category $category) {
 });
 ```
 
-Se agrega la ultima linea `'categories'=> Category ::all()`, a cada unas de las rutas. 
+Se agrega la ultima linea `'categories'=> Category ::all()`, a cada unas de las rutas.
 
 ## How to Extract a Dropdown Blade Component
 
 Despues de haber creado con éxito la funcionalidad básica para un menú desplegable, lo vamos hacer que sea reutilizable. Para esto vamos a extraer el componente Blade x-dropdown. Esto tendrá el efecto secundario de aislar todo el código específico de Alpine en ese único archivo de componente.
 
-Se crean varias vistas para poder separar el código, de acuerdo, a su componentes y funcionalidades, así poder reutizarlo. 
+Se crean varias vistas para poder separar el código, de acuerdo, a su componentes y funcionalidades, así poder reutizarlo.
 
 Creamos los componentes para las vistas, `dropdown-blade.php`, `dropdown-item.blade.php`, `icon.blade.php` y modificamos `_posts-header.blade.php`
 
@@ -647,7 +647,6 @@ Para `dropdown-blade.php` el código, quedaria de la siguiente forma
     </div>
 ```
 
-
 Para `dropdown-item.blade.php` el código seria:
 
 ```php
@@ -666,6 +665,7 @@ hover:bg-blue-500 hover:text-white focus:text-white';
 <a {{ $attributes(['class' => $classes]) }}>
     {{ $slot }}</a>
 ```
+
 Para `icon.blade.php` el código seria:
 
 ```php
@@ -682,7 +682,8 @@ Para `icon.blade.php` el código seria:
 @endif
 
 ```
-Modificamos `_posts-header.blade.php` 
+
+Modificamos `_posts-header.blade.php`
 
 ```php
 <!--  Category -->
@@ -733,4 +734,53 @@ Route::get('categories/{category:slug}', function (Category $category) {
     ]);
 })->name('category');
 ```
+
 ## Quick Tweaks and Clean-Up
+
+En este capitulo se hace una limpieza rápida, se refresca la base de datos, para esto haremos lo siguiente.
+
+Modificamos las dos últimas lineas de la función en `factories` `PostFactorory.php`, quedando de la siguiente forma:
+
+```php
+public function definition()
+    {
+        return [
+            'user_id' => User::factory(),
+            'category_id' => Category::factory(),
+            'title' => $this->faker->sentence,
+            'slug' => $this->faker->slug,
+            'excerpt' => '<p>' . implode('</p><p>', $this->faker->paragraphs(2)) . '</p>',
+            'body' => '<p>' . implode('</p><p>', $this->faker->paragraphs(6)) . '</p>',
+        ];
+    }
+```
+
+Se modifica `CategoryFactory.php`, igual que a la función anterior
+
+```php
+public function definition()
+    {
+        return [
+            'name' => $this->faker->unique()->word,
+            'slug' => $this->faker->unique()->slug
+        ];
+    }
+```
+
+Se refresca la base de datos con el comando
+
+    php artisan migrate:fresh 
+
+Y se ingresa `php artisan tinker`, para crear nuevos `Post`
+
+    App\Models\Post::factory(30)->create();
+
+Luego modificamos las vistas donde de encuentre `excerpt` y `body`, con comodines para que no muestre el código html, de la siguiente forma.
+
+```php
+ <div class="text-sm mt-2 space-y-4">{!! $post->excerpt !!}</div>
+
+ <div class="space-y-4 lg:text-lg leading-loose">{!! $post->body !!}</div>
+
+```
+Para las vistas `post-card.blade.php`, `post-featured-card.blade.php` y `post.blade.php`

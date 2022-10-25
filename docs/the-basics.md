@@ -372,6 +372,5 @@ public static function all(){
 
         });
 
-
     }
 ```
