@@ -6,11 +6,11 @@
 
 Se comienza a construir el diseño real del blog para esta serie. Como se discutió en el episodio cuatro, ya escribí el código HTML y CSS base. Eso significa que solo necesitamos descargarlo de GitHub y comenzar a migrarlo a nuestra aplicación Laravel. Como parte de esto, prepararemos el archivo de diseño y extraeremos algunos componentes de Blade.
 
-El codigo html y css, además de las imagenes a utilizar para el proyecto Laravel se descarga a esta dirección. 
+El codigo html y css, además de las imagenes a utilizar para el proyecto Laravel se descarga a esta dirección.
 
     https://github.com/laracasts/Laravel-From-Scratch-HTML-CSS
 
-Una vez descargado, se copia la carpeta de `images` en el folder `public` de nuestro proyecto Laravel, luego utilizamos el codigo de archivo `ìndex.html` en las diferentes vistas del proyecto, y se crean nuevas vistas. 
+Una vez descargado, se copia la carpeta de `images` en el folder `public` de nuestro proyecto Laravel, luego utilizamos el codigo de archivo `ìndex.html` en las diferentes vistas del proyecto, y se crean nuevas vistas.
 
 En la vista `layout.blade.php`, se modifica de la siguiente forma:
 
@@ -74,7 +74,7 @@ En la vista `layout.blade.php`, se modifica de la siguiente forma:
 </body>
 ```
 
-La vista `posts.blade.php`, se modifica así: 
+La vista `posts.blade.php`, se modifica así:
 
 ```html
 <x-layout>
@@ -167,6 +167,7 @@ Se crea la vista `post-card.blade.php`
 ```
 
 Se crea otra vista con el nombre de `post-featured-card.blade`
+
 ```html
 <article
             class="transition-colors duration-300 hover:bg-gray-100 border border-black border-opacity-0 hover:border-opacity-5 rounded-xl">
@@ -231,7 +232,6 @@ Se crea otra vista con el nombre de `post-featured-card.blade`
 ```
 
 Y la ultima vista para el `header`, con el nombre de `_posts-header.blade.php`
-
 
     <header class="max-w-xl mx-auto mt-20 text-center">
         <h1 class="text-4xl">
@@ -301,9 +301,9 @@ Y la ultima vista para el `header`, con el nombre de `_posts-header.blade.php`
 
 ## Blade Components and CSS Grids
 
-Este capitulo, se aprende a utilizar los CSS grids, cambiamos algunos elementos desde la barra de herramientas del navegador y se modificará código de las vistas. 
+Este capitulo, se aprende a utilizar los CSS grids, cambiamos algunos elementos desde la barra de herramientas del navegador y se modificará código de las vistas.
 
-Se modifica código de las vistas para colocar nuestras direcciones de rutas y atributos del modelo, para mostrar la información de acuerdo a las propiedades establecidas en la base de datos. 
+Se modifica código de las vistas para colocar nuestras direcciones de rutas y atributos del modelo, para mostrar la información de acuerdo a las propiedades establecidas en la base de datos.
 
 `posts.blade.php`
 
@@ -472,7 +472,7 @@ Despues de crear y modificar la pagina de inicio, se comienza a dar estilo y for
 
 Para la vista `post.blade.php`, se modificara el código que teniamos ya en ella, de la siguiente forma. (Agregamos estilo css y html ---- Además, se agregan la rutas y atributos de los modelos del proyecto)
 
-```php
+```html
 <x-layout>
 
     <section class="px-6 py-8">
@@ -535,7 +535,7 @@ Para la vista `post.blade.php`, se modificara el código que teniamos ya en ella
 </x-layout>
 ```
 
-Creamos una nueva vista, llamada `category-button.blade.php`, en la cual agregaremos el codigo de `Category` para tener todo debidamente ordenado e implementar las buenas practicas de la programación. 
+Creamos una nueva vista, llamada `category-button.blade.php`, en la cual agregaremos el codigo de `Category` para tener todo debidamente ordenado e implementar las buenas practicas de la programación.
 
 ```php
 @props(['category'])
@@ -546,3 +546,73 @@ Creamos una nueva vista, llamada `category-button.blade.php`, en la cual agregar
     > {{ $category->name}}</a>
 ```
 
+## A Small JavaScript Dropdown Detour
+
+A continuación, se deberá hacer que el menú desplegable "Categorías" en la página de inicio funcione como se esperaba. Para esto se  necesitará JavaScript para que funcione, así, que usaremos la biblioteca Alpine.js.
+
+Para utilizar la biblioteca `Alpine.js`, ingresamos al enlace `https://github.com/alpinejs/alpine/tree/v2.8.2` y copiamos la linea:
+
+    <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
+
+La cual se debe colocar en la vista `layout.blade.php`.
+
+Luego modificamos la vista `_posts-header.blade.php`, donde se encuentra el select de `Categoria`, ahi ingresará el nuevo código para crear el menu despleglable de Categoria.
+
+```html
+<div class="space-y-2 lg:space-y-0 lg:space-x-4 mt-8">
+        <!--  Category -->
+        <div class="relative  lg:inline-flex bg-gray-100 rounded-xl">
+
+            <div x-data="{show: false}" @click.away="show = false">
+
+                <button @click="  show = ! show "
+                    class="py-2 pl-3 pr-9 text-sm font-semibold w-32 text-left lg:inline-flex">
+
+                    {{ isset($currentCategory) ? ucwords($currentCategory->name): 'Categories' }}
+
+                    <svg class="transform -rotate-90 absolute pointer-events-none" style="right: 12px;" width="22"
+                        height="22" viewBox="0 0 22 22">
+                        <g fill="none" fill-rule="evenodd">
+                            <path stroke="#000" stroke-opacity=".012" stroke-width=".5" d="M21 1v20.16H.84V1z">
+                            </path>
+                            <path fill="#222"
+                                d="M13.854 7.224l-3.847 3.856 3.847 3.856-1.184 1.184-5.04-5.04 5.04-5.04z"></path>
+                        </g>
+                    </svg>
+
+
+                </button>
+                <div x-show="show" class="py-2 absolute bg-gray-100  mt-2 rounded-xl w-full z-50" style="display: none">
+                    <a href="/"
+                        class="block text-left px-3 text-sm leading-6 hover:bg-blue-500
+                        hover:bg-blue-500 hover:text-white focus:text-white"> All</a>
+
+
+                    @foreach ($categories as $category)
+                        <a href="/categories/{{$category->slug}}"
+                            class="block text-left px-3 text-sm leading-6 hover:bg-blue-500
+                            hover:bg-blue-500 hover:text-white focus:text-white
+                            {{ isset($currentCategory) && $currentCategory->is($category) ? 'bg-blue-500 text-white': ''}}
+                            ">{{ucwords($category->name)}}</a>
+                    @endforeach
+                </div>
+            </div>
+
+
+        </div>
+```
+
+Y por último, modificamos las rutas, para que cargue correctamente, se modifica la route `web.php`
+
+```php
+Route::get('categories/{category:slug}', function (Category $category) {
+
+    return view('posts', [
+        'posts' => $category->posts,
+        'currentCategory'=> $category,
+        'categories'=> Category ::all()
+    ]);
+});
+```
+
+Se agrega la ultima linea `'categories'=> Category ::all()`, a cada unas de las rutas. 
