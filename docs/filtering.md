@@ -119,12 +119,12 @@ Recordar cambiar rutas en la vistas, en caso de ser necesario, por ejemplo:
     <h5 class="font-bold">
     <a href="/?author={{ $post->author->username }}">{{ $post->author->name }}</a>
     </h5>
-        
+
 ## Author Filtering
 
-A continuación, agreguemos soporte para filtrar publicaciones según su autor respectivo. Con esto ahora podremos ordenar fácilmente todas las publicaciones por categoría, autor, texto de búsqueda o todo lo anterior. Para poder lograrlo hacermos una serie de modificaciones y agregamos código. 
+A continuación, agreguemos soporte para filtrar publicaciones según su autor respectivo. Con esto ahora podremos ordenar fácilmente todas las publicaciones por categoría, autor, texto de búsqueda o todo lo anterior. Para poder lograrlo hacermos una serie de modificaciones y agregamos código.
 
-Primero agregamos las directrices de busqueda de autor correspondientes en el modelo `Post.php`, la función `scopeFilter`. 
+Primero agregamos las directrices de busqueda de autor correspondientes en el modelo `Post.php`, la función `scopeFilter`.
 
     $query->when($filters['author'] ?? false, fn($query, $author) =>
                 $query->whereHas('author', fn ($query) =>
@@ -132,7 +132,7 @@ Primero agregamos las directrices de busqueda de autor correspondientes en el mo
                 )
             );
 
-Quedando de la siguiente forma 
+Quedando de la siguiente forma
 
 ```php
 public function scopeFilter($query, array $filters)
@@ -165,7 +165,7 @@ Luego modificamos la ruta en las vistas html que nos muestra el `nombre del auto
 </h5>
 ```
 
-Y eliminamos la routa en `web.php`, acerca de autores. 
+Y eliminamos la routa en `web.php`, acerca de autores.
 
 ```php
 Route::get('authors/{author:username}', function (User $author) {
@@ -178,7 +178,7 @@ Route::get('authors/{author:username}', function (User $author) {
 
 ## Merge Category and Search Queries
 
-A continuación, debemos actualizar tanto el menú desplegable de categorías como la entrada de búsqueda para incluir todos los parámetros de cadena de consulta existentes y relevantes. En este momento, si estamos navegando en una determinada categoría, tan pronto como realicemos una búsqueda, esa categoría actual volverá a "Todos". Para arreglar esto, hacemos lo siguiente: 
+A continuación, debemos actualizar tanto el menú desplegable de categorías como la entrada de búsqueda para incluir todos los parámetros de cadena de consulta existentes y relevantes. En este momento, si estamos navegando en una determinada categoría, tan pronto como realicemos una búsqueda, esa categoría actual volverá a "Todos". Para arreglar esto, hacemos lo siguiente:
 
 Agregamos el codigo a la vista `category-dropdown.blade.php`, antes del `foreach` de categorias.
 
@@ -188,7 +188,7 @@ Agregamos el codigo a la vista `category-dropdown.blade.php`, antes del `foreach
 </x-dropdown-item>
 ```
 
-Que al final se muestra así, 
+Que al final se muestra así,
 
     <x-dropdown>
         <x-slot name="trigger">
@@ -211,12 +211,58 @@ Que al final se muestra así,
         @endforeach
     </x-dropdown>
 
-
-Luego a la vista `_header.blade.php` modificamos el formulario de busqueda[search], con las siguientes lineas. 
+Luego a la vista `_header.blade.php` modificamos el formulario de busqueda[search], con las siguientes lineas.
 
 ```php
  <form method="GET" action="/">
     @if (request('category'))
          <input type="hidden" name="category" value="{{ request('category') }}">
     @endif
+```
+
+## Fix a Confusing Eloquent Query Bug
+
+Tenemos un pequeño error dentro de nuestro ámbito de consulta filter(). En esta lección, revisaremos la consulta SQL subyacente que produce los resultados incorrectos y luego corregiremos el error en nuestra consulta Eloquent. Para esto modificamos la función `scopeFilter`  del modelo `Post.php` en el `query` de `search`
+
+    $query->where(
+            fn ($query) =>
+                $query->where('title', 'like', '%' . $search . '%')
+                    ->orWhere('body', 'like', '%' . $search . '%')
+            )
+
+Mostrando la función final
+
+```php
+public function scopeFilter($query, array $filters)
+    {
+        $query->when(
+            $filters['search'] ?? false,
+            fn ($query, $search) =>
+            $query->where(
+                fn ($query) =>
+                $query->where('title', 'like', '%' . $search . '%')
+                    ->orWhere('body', 'like', '%' . $search . '%')
+            )
+        );
+
+        $query->when(
+            $filters['category'] ?? false,
+            fn ($query, $category) =>
+            $query->whereHas(
+                'category',
+                fn ($query) =>
+                $query->where('slug', $category)
+            )
+        );
+
+        $query->when(
+            $filters['author'] ?? false,
+            fn ($query, $author) =>
+            $query->whereHas(
+                'author',
+                fn ($query) =>
+                $query->where('username', $author)
+            )
+        );
+    }
 ```
