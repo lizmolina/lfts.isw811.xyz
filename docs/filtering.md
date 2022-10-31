@@ -177,3 +177,46 @@ Route::get('authors/{author:username}', function (User $author) {
 ```
 
 ## Merge Category and Search Queries
+
+A continuación, debemos actualizar tanto el menú desplegable de categorías como la entrada de búsqueda para incluir todos los parámetros de cadena de consulta existentes y relevantes. En este momento, si estamos navegando en una determinada categoría, tan pronto como realicemos una búsqueda, esa categoría actual volverá a "Todos". Para arreglar esto, hacemos lo siguiente: 
+
+Agregamos el codigo a la vista `category-dropdown.blade.php`, antes del `foreach` de categorias.
+
+```html
+<x-dropdown-item href="/?{{ http_build_query(request()->except('category', 'page')) }}"
+        :active="request()->routeIs('home')">All
+</x-dropdown-item>
+```
+
+Que al final se muestra así, 
+
+    <x-dropdown>
+        <x-slot name="trigger">
+            <button class="py-2 pl-3 pr-9 text-sm font-semibold w-full lg:w-32 text-left flex lg:inline-flex">
+                {{ isset($currentCategory) ? ucwords($currentCategory->name) : 'Categories' }}
+
+                <x-icon name="down-arrow" class="absolute pointer-events-none" style="right: 12px;"/>
+            </button>
+        </x-slot>
+
+        <x-dropdown-item href="/?{{ http_build_query(request()->except('category', 'page')) }}"
+            :active="request()->routeIs('home')">All
+        </x-dropdown-item>
+
+        @foreach ($categories as $category)
+            <x-dropdown-item
+            href="/?category={{ $category->slug }}&{{ http_build_query(request()->except('category', 'page')) }}"
+                :active='request()->is("categories/{$category->slug}")'
+            >{{ ucwords($category->name) }}</x-dropdown-item>
+        @endforeach
+    </x-dropdown>
+
+
+Luego a la vista `_header.blade.php` modificamos el formulario de busqueda[search], con las siguientes lineas. 
+
+```php
+ <form method="GET" action="/">
+    @if (request('category'))
+         <input type="hidden" name="category" value="{{ request('category') }}">
+    @endif
+```
