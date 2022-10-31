@@ -17,7 +17,7 @@
                             <h5 class="font-bold">
                                 <a href="/?author={{ $post->author->username }}">{{ $post->author->name }}</a>
                             </h5>
-                            <h6>Mascot at Laracasts</h6>
+
                         </div>
                     </div>
                 </div>

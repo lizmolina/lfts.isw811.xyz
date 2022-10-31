@@ -121,3 +121,59 @@ Recordar cambiar rutas en la vistas, en caso de ser necesario, por ejemplo:
     </h5>
         
 ## Author Filtering
+
+A continuación, agreguemos soporte para filtrar publicaciones según su autor respectivo. Con esto ahora podremos ordenar fácilmente todas las publicaciones por categoría, autor, texto de búsqueda o todo lo anterior. Para poder lograrlo hacermos una serie de modificaciones y agregamos código. 
+
+Primero agregamos las directrices de busqueda de autor correspondientes en el modelo `Post.php`, la función `scopeFilter`. 
+
+    $query->when($filters['author'] ?? false, fn($query, $author) =>
+                $query->whereHas('author', fn ($query) =>
+                    $query->where('username', $author)
+                )
+            );
+
+Quedando de la siguiente forma 
+
+```php
+public function scopeFilter($query, array $filters)
+    {
+        $query->when($filters['search'] ?? false, fn($query, $search) =>
+            $query
+                ->where('title', 'like', '%' . $search . '%')
+                ->orWhere('body', 'like', '%' . $search . '%')
+        );
+
+        $query->when($filters['category'] ?? false, fn($query, $category) =>
+            $query->whereHas('category', fn ($query) =>
+                $query->where('slug', $category)
+            )
+        );
+
+        $query->when($filters['author'] ?? false, fn($query, $author) =>
+            $query->whereHas('author', fn ($query) =>
+                $query->where('username', $author)
+            )
+        );
+    }
+```
+
+Luego modificamos la ruta en las vistas html que nos muestra el `nombre del autor`. Como `post-featured-card.blade.php`, `post-card.blade.php` y `show.blade.php`
+
+```html
+<h5 class="font-bold">
+    <a href="/?author={{ $post->author->username }}">{{ $post->author->name }}</a>
+</h5>
+```
+
+Y eliminamos la routa en `web.php`, acerca de autores. 
+
+```php
+Route::get('authors/{author:username}', function (User $author) {
+    return view('posts', [
+        'posts' => $author->posts,
+        'categories' => Category::all()
+    ]);
+});
+```
+
+## Merge Category and Search Queries

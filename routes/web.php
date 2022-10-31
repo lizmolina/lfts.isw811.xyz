@@ -1,9 +1,7 @@
 <?php
 
 use App\Http\Controllers\PostController;
-use App\Models\Post;
-use App\Models\User;
-use App\Models\Category;
+
 use Clockwork\Storage\Search;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -27,14 +25,6 @@ Route::get('/', [PostController::class, 'index'])->name('home');
 
 Route::get('posts/{post:slug}', [PostController::class, 'show']);
 
-
-
-Route::get('authors/{author:username}', function (User $author) {
-
-    return view('posts', [
-        'posts' => $author->posts
-    ]);
-});
 
 
 
