@@ -10,7 +10,7 @@ Se iniciará con la creación de un controler para el modulo `Registro`, en la m
 
     php artisan make:controller RegisterController 
 
-Al cual se le agrega el siguiente código, que contiene la función de crear el nuevo registro de usuario. 
+Al cual se le agrega el siguiente código, que contiene la función de crear el nuevo registro de usuario.
 
 ```php
 <?php
@@ -117,7 +117,7 @@ Y agregamos
 protected $guarded = [];
 ```
 
-Por último se incorporan las rutas para registro en las routes `web.php`. Recuerde importar las dependencias. 
+Por último se incorporan las rutas para registro en las routes `web.php`. Recuerde importar las dependencias.
 
 ```php
 Route::get('register', [RegisterController::class, 'create'])->middleware('guest');
@@ -127,11 +127,11 @@ Route::post('register', [RegisterController::class, 'store'])->middleware('guest
 
 ## Automatic Password Hashing With Mutators
 
-Aprovecharemos los mutadores de Eloquent para asegurarnos de que las contraseñas siempre se codifican antes de que se conserve. En este capitulo de encriptan la contraseñas. 
+Aprovecharemos los mutadores de Eloquent para asegurarnos de que las contraseñas siempre se codifican antes de que se conserve. En este capitulo de encriptan la contraseñas.
 
 Para eso agregaremos la función `setPasswordAttribute` al modelo `User.php`
 
-```php 
+```php
  public function setPasswordAttribute($password)
     {
         $this->attributes['password'] = bcrypt($password);
@@ -142,7 +142,7 @@ Para eso agregaremos la función `setPasswordAttribute` al modelo `User.php`
 
 A continuación, debemos proporcionar comentarios al usuario cada vez que falle el verificador de validación. En estos casos, podemos buscar la directiva @error Blade para representar fácilmente el mensaje de validación correspondiente de un atributo (si corresponde). También discutiremos cómo obtener datos de entrada antiguos ().
 
-Para esto modificamos los atributos en el controlador de `Registro`, `RegisterControler.php`, que deseamos que posean requisitos de validación al registrar. En nuestro caso modificamos en `username` y `email`. 
+Para esto modificamos los atributos en el controlador de `Registro`, `RegisterControler.php`, que deseamos que posean requisitos de validación al registrar. En nuestro caso modificamos en `username` y `email`.
 
     'username' => 'required|min:3|max:255|unique:users,username',
     'email' => 'required|email|max:255|unique:users,email',
@@ -155,15 +155,15 @@ Luego agregamos la directiva `@error Blade` en la vista html de `create.blade.ph
 @enderror
 ```
 
-Como obtener datos de entreda antiguos. 
+Como obtener datos de entreda antiguos.
 
     value="{{ old('name') }}"
 
 ## Show a Success Flash Message
 
-A continuación se mostrará al usuario un comentario despues de registrarse exitosamente a nuestro sitio. Con la ayuda de un Mensaje Flash. 
+A continuación se mostrará al usuario un comentario despues de registrarse exitosamente a nuestro sitio. Con la ayuda de un Mensaje Flash.
 
-Primero creamos una nueva vista en la carpeta `components` perteneciente a vistas, con el nombre de `flash.blade.php` 
+Primero creamos una nueva vista en la carpeta `components` perteneciente a vistas, con el nombre de `flash.blade.php`
 
 ```html
 @if (session()->has('success'))
@@ -183,11 +183,101 @@ Luego agregamos la directiva de la nueva vista creada a la vista de `layout.blad
         <x-flash /> --------esta linea
     </body>
 
-
-Para finalizar agregamos el `mensaje flash` en la función `store` de `RegisterController.php`, al final de `return` que mostrará al usuario registrado un mensaje de exito. 
+Para finalizar agregamos el `mensaje flash` en la función `store` de `RegisterController.php`, al final de `return` que mostrará al usuario registrado un mensaje de exito.
 
 ```php
  return redirect('/')->with('success', 'Your account has been created.');
 ```
 
-##
+## Login and Logout
+
+En este capitulo preparamos el ambiente para hacer el `login` y el `logout`, creamos una controler llamado `SessionsController.php`, con el comando
+
+    php artisan make:controller SessionsController
+
+Y se agrega el código, para iniciar y salir la sesión.
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+
+class SessionsController extends Controller
+{
+    public function create()
+    {
+        return view('sessions.create');
+    }
+
+    public function store()
+    {
+        $attributes = request()->validate([
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
+
+        if (auth()->attempt($attributes)) {
+            session()->regenerate();
+
+            return redirect('/')->with('success', 'Welcome Back!');
+        }
+
+        throw ValidationException::withMessages([
+            'email' => 'Your provided credentials could not be verified.'
+        ]);
+    }
+
+    public function destroy()
+    {
+        auth()->logout();
+
+        return redirect('/')->with('success', 'Goodbye!');
+    }
+}
+
+```
+
+En la vista layout.blade se agrega el código html para mostrar la etiquetas de `login` y `logout`, además  <div class="mt-8 md:mt-0 flex items-center">
+    @auth
+<span class="text-xs font-bold uppercase">Welcome, {{ auth()->user()->name }}!</span>
+
+    <form method="POST" action="/logout" class="text-xs font-semibold text-blue-500 ml-6">
+    @csrf
+
+<button type="submit">Log Out</button>
+</form>
+@else
+ <a href="/register" class="text-xs font-bold uppercase">Register</a>
+ <a href="/login" class="ml-6 text-xs font-bold uppercase">Log In</a>
+@endauth  redireccionar las rutas.
+
+```html
+  <div class="mt-8 md:mt-0 flex items-center">
+                @auth
+                    <span class="text-xs font-bold uppercase">Welcome, {{ auth()->user()->name }}!</span>
+
+                    <form method="POST" action="/logout" class="text-xs font-semibold text-blue-500 ml-6">
+                        @csrf
+
+                        <button type="submit">Log Out</button>
+                    </form>
+                @else
+                    <a href="/register" class="text-xs font-bold uppercase">Register</a>
+                    <a href="/login" class="ml-6 text-xs font-bold uppercase">Log In</a>
+                @endauth
+```
+
+Se modifica el `RouteServiceProvider.php` en `Providers`
+
+    public const HOME = '/';
+
+Se agrega la ruta para el `logout` en `web.php`
+
+```php
+Route::post('logout', [SessionsController::class, 'destroy'])->middleware('auth');
+```
+
+## 
