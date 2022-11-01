@@ -46,6 +46,13 @@ class Post extends Model
         );
     }
 
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+
+
 
     //protected $fillable = ['title', 'excerpt', 'body'];
     public function category()
