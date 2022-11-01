@@ -326,4 +326,78 @@ public function boot()
     }
 ```
 
-##
+##  Some Light Chapter Clean Up
+
+Extraeremos un par de componentes de Blade, crearemos una inclusión de PHP y luego reformatearemos manualmente los bits de nuestro código.
+
+Aca se desarrolla un código limpio y reutilizable, para esto creamos las vistas para los diferentes componentes y los implementamos en la vista principal de la publicación. El funcionamiento sigue igual. 
+
+Creamos un vista el formulario de comentarios en la carpeta de `posts`, con el nombre de `_add-comment-form.blade.php`
+
+```html
+@auth
+    <x-panel>
+        <form method="POST" action="/posts/{{ $post->slug }}/comments">
+            @csrf
+
+            <header class="flex items-center">
+                <img src="https://i.pravatar.cc/60?u={{ auth()->id() }}"
+                     alt=""
+                     width="40"
+                     height="40"
+                     class="rounded-full">
+
+                <h2 class="ml-4">Want to participate?</h2>
+            </header>
+
+            <div class="mt-6">
+                <textarea
+                    name="body"
+                    class="w-full text-sm focus:outline-none focus:ring"
+                    rows="5"
+                    placeholder="Quick, thing of something to say!"
+                    required></textarea>
+
+                @error('body')
+                    <span class="text-xs text-red-500">{{ $message }}</span>
+                @enderror
+            </div>
+
+            <div class="flex justify-end mt-6 pt-6 border-t border-gray-200">
+                <x-submit-button>Post</x-submit-button>
+            </div>
+        </form>
+    </x-panel>
+@else
+    <p class="font-semibold">
+        <a href="/register" class="hover:underline">Register</a> or
+        <a href="/login" class="hover:underline">log in</a> to leave a comment.
+    </p>
+@endauth
+```
+
+Agregamos un nuevo componentes en la vistas para el botón, `submit-button.blade.php`
+
+```html
+<button type="submit"
+        class="bg-blue-500 text-white uppercase font-semibold text-xs py-2 px-10 rounded-2xl hover:bg-blue-600"
+>
+    {{ $slot }}
+</button>
+```
+
+Y en la vista de la publicación `show.blade.php`, llamamos la directivas de las vistas creadas anteriormente. 
+
+```html
+ <section class="col-span-8 col-start-5 mt-10 space-y-6">
+
+    @include('posts._add-comment-form')             
+
+       @foreach ($post->comments as $comment)
+            <x-post-comment :comment="$comment" />
+       @endforeach
+ </section>
+```
+
+
+
