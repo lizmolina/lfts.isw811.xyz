@@ -355,4 +355,30 @@ Route::get('login', [SessionsController::class, 'create'])->middleware('guest');
 Route::post('login', [SessionsController::class, 'store'])->middleware('guest');
 ```
 
-##
+## Laravel Breeze Quick Peek
+
+Con el sistema de autenticación listo se revisa el código, se hacen modificaciones para mejorar y se crea un demo para probar los paquetes de autenticación `Laravel Breeze`
+
+Se modifica la función `store` en el controlador `SessionsController.php`
+
+```php
+public function store()
+    {
+        $attributes = request()->validate([
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
+
+        if (! auth()->attempt($attributes)) {
+            throw ValidationException::withMessages([
+                'email' => 'Your provided credentials could not be verified.'
+            ]);
+        }
+
+        session()->regenerate();
+
+        return redirect('/')->with('success', 'Welcome Back!');
+    }
+```
+
+
