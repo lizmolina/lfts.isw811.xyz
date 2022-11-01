@@ -138,4 +138,25 @@ Para eso agregaremos la función `setPasswordAttribute` al modelo `User.php`
     }
 ```
 
+## Failed Validation and Old Input Data
+
+A continuación, debemos proporcionar comentarios al usuario cada vez que falle el verificador de validación. En estos casos, podemos buscar la directiva @error Blade para representar fácilmente el mensaje de validación correspondiente de un atributo (si corresponde). También discutiremos cómo obtener datos de entrada antiguos ().
+
+Para esto modificamos los atributos en el controlador de `Registro`, `RegisterControler.php`, que deseamos que posean requisitos de validación al registrar. En nuestro caso modificamos en `username` y `email`. 
+
+    'username' => 'required|min:3|max:255|unique:users,username',
+    'email' => 'required|email|max:255|unique:users,email',
+
+Luego agregamos la directiva `@error Blade` en la vista html de `create.blade.php` para registrar el nuevo usuario y así poder mostrar el mensaje de error. Recuerda agregar a cada uno de los atributos a ingresar, por ejemplo, `name`, `username`, `email`, `password`
+
+```html
+@error('name')
+    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+@enderror
+```
+
+Como obtener datos de entreda antiguos. 
+
+    value="{{ old('name') }}"
+
 ##
