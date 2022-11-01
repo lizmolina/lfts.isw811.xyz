@@ -1,13 +1,9 @@
 <?php
 
+use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\PostController;
-
-use Clockwork\Storage\Search;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
-use Spatie\YamlFrontMatter\YamlFrontMatter;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -25,9 +21,9 @@ Route::get('/', [PostController::class, 'index'])->name('home');
 
 Route::get('posts/{post:slug}', [PostController::class, 'show']);
 
+Route::get('register', [RegisterController::class, 'create'])->middleware('guest');
+
+Route::post('register', [RegisterController::class, 'store'])->middleware('guest');
 
 
 
-Auth::routes();
-
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
