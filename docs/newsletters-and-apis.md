@@ -139,4 +139,79 @@ A continuación haremos modificaciones en la vista de `layout.blade.php`, para i
 </body>
 ```
 
-##
+##  Extract a Newsletter Service
+
+Este episodio vamos a crear la propia clase para Newsletter, además, de su controlador correspondiente y agregar la ruta de enlace, para subscripción del boletín. (Objetivo, implementar buenas prácticas de programación. )
+
+Creamos una clase con el nombre de `Newsletter.php` en un folder creado en `app`, llamado `Services`. 
+
+```php
+<?php
+
+namespace App\Services;
+
+use MailchimpMarketing\ApiClient;
+
+class Newsletter
+{
+    public function subscribe(string $email, string $list = null)
+    {
+        $list ??= config('services.mailchimp.lists.subscribers');
+
+        return $this->client()->lists->addListMember($list, [
+            'email_address' => $email,
+            'status' => 'subscribed'
+        ]);
+    }
+
+    protected function client()
+    {
+        return (new ApiClient())->setConfig([
+            'apiKey' => config('services.mailchimp.key'),
+            'server' => 'us6'
+        ]);
+    }
+}
+```
+
+Luego creamos el controlador para `Newsletter.php`, en la maquina vagrant.
+
+    php artisan make:controller NewsletterController
+
+Y agregamos el código anteriormente desarrollado en rutas, a continuación
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Services\Newsletter;
+use Exception;
+use Illuminate\Validation\ValidationException;
+
+class NewsletterController extends Controller
+{
+    public function __invoke(Newsletter $newsletter)
+    {
+        request()->validate(['email' => 'required|email']);
+
+        try {
+            $newsletter->subscribe(request('email'));
+        } catch (Exception $e) {
+            throw ValidationException::withMessages([
+                'email' => 'This email could not be added to our newsletter list.'
+            ]);
+        }
+
+        return redirect('/')
+            ->with('success', 'You are now signed up for our newsletter!');
+    }
+}
+```
+
+Ahora implementamos la ruta de enlace, recuerde importar las referencias a la clase o controlador, en rutas `web.php`
+
+```php
+Route::post('newsletter', NewsletterController::class);
+```
+## 
