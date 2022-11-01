@@ -240,4 +240,90 @@ Y por último identamos el código de la vista `post-comment.blade.php` dentro d
 </x-panel>
 ```
 
+## Activate the Comment Form
+
+Con el formulario de comentarios diseñado, agregamos la lógica para activarlo. Para este seguiremos una serie de pasos. 
+
+Creamos un controlador para los comentarios de las publicaciones, `PostCommentsController.php`
+
+    php artisan make:controller PostCommentsController
+
+Agregamos la función de `validate()` y `create()` nuevos comentarios 
+
+```php
+ public function store(Post $post)
+    {
+        request()->validate([
+            'body' => 'required'
+        ]);
+
+        $post->comments()->create([
+            'user_id' => request()->user()->id,
+            'body' => request('body')
+        ]);
+
+        return back();
+    }
+```
+
+Modificamos la vista donde se encuentra el formulario de comentarios `show.blade.php`, para agregar la ruta y las directivas de logueo, para poder comentar. 
+
+```html
+@auth
+                       
+                    <x-panel>
+                        <form method="POST" action="/posts/{{ $post->slug }}/comments">
+                            @csrf
+
+                            <header class="flex items-center">
+                                <img src="https://i.pravatar.cc/60?u={{ auth()->id() }}" alt="" width="40"
+                                    height="40" class="rounded-full">
+
+                                <h2 class="ml-4">Want to participate?</h2>
+                            </header>
+
+                            <div class="mt-6">
+                                <textarea name="body" class="w-full text-sm focus:outline-none focus:ring" rows="5"
+                                    placeholder="Quick, thing of something to say!" required>
+                                </textarea>
+
+
+                            </div>
+
+                            <div class="flex justify-end mt-6 pt-6 border-t border-gray-200">
+                                <button type="submit"
+                                    class="bg-blue-500 text-white uppercase font-semibold text-xs py-2 px-10 rounded-2xl hover:bg-blue-600">Post</button>
+                            </div>
+                        </form>
+
+                    </x-panel>
+                     
+                    
+                @else
+                    <p class="font-semibold">
+                        <a href="/register" class="hover:underline">Register</a> or
+                        <a href="/login" class="hover:underline">log in</a> to leave a comment.
+                    </p>
+                @endauth
+```
+
+Le damos formato a la fecha de publicación en la vista `post-comment.blade.php`
+
+    <time>{{ $comment->created_at->format('F j, Y, g:i a') }}</time>
+
+Agregamos la ruta para crear nuevos comentarios en `web.php`
+
+```php
+Route::post('posts/{post:slug}/comments', [PostCommentsController::class, 'store']);
+```
+
+Se modifica el `AppServiceProvider.php` en Providers. Se desabilita temporalmente la protección de asignación  masiva. 
+
+```php
+public function boot()
+    {
+        Model::unguard();
+    }
+```
+
 ##
