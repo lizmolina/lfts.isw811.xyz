@@ -126,7 +126,7 @@ También, modificamos `PostFactory.php`, en `title` y `slug`, quedando de la sig
     'title' => $this->faker->sentence(),
     'slug' => $this->faker->slug(),
 
-Y por último, `UserFactory.php`, modificamos al final, agregando `()`, de los siguientes atributos. 
+Y por último, `UserFactory.php`, modificamos al final, agregando `()`, de los siguientes atributos.
 
     'name' => $this->faker->name(),
     'username' => $this->faker->unique()->userName(),
@@ -145,7 +145,7 @@ Luego se modifican las vistas, en este caso sería la vista de comentarios, `pos
 
 ```
 
-Junto los vista del `post`, `show.blade.php`, directamente donde llamamos a la vista de comentarios. 
+Junto los vista del `post`, `show.blade.php`, directamente donde llamamos a la vista de comentarios.
 
 ```html
   <section class="col-span-8 col-start-5 mt-10 space-y-6">
@@ -155,11 +155,89 @@ Junto los vista del `post`, `show.blade.php`, directamente donde llamamos a la v
   </section>
 ```
 
-Luego para hacer modificaciones en la base datos, agregar nuevos comentarios, ejecutamos los siguientes comandos. 
+Luego para hacer modificaciones en la base datos, agregar nuevos comentarios, ejecutamos los siguientes comandos.
 
     php artisan tinker
     $post= App\Models\Post::latest()->first(); ---Ver el id del primer post
     App\Models\Comment::factory(10)->create(['post_id' => 18]);  --- crear comentarios al id especifico. 
     App\Models\Comment::factory(10)->create(); ---crear comentarios a post ramdon
+
+## Design the Comment Form
+
+En este episodio se crea un formulario para permitir que cualquier usuario autenticado pueda comentar en las publicaciones. Para esto haremos lo siguiente:
+
+En la vista `show.blade.php`, se crea el formulario para comentar
+
+```html
+<x-panel>
+                        <form method="POST" action="#">
+                            @csrf
+
+                            <header class="flex items-center">
+                                <img src="https://i.pravatar.cc/60?u={{ auth()->id() }}"
+                                     alt=""
+                                     width="40"
+                                     height="40"
+                                     class="rounded-full">
+
+                                <h2 class="ml-4">Want to participate?</h2>
+                            </header>
+
+                            <div class="mt-6">
+                                <textarea
+                                    name="body"
+                                    class="w-full text-sm focus:outline-none focus:ring"
+                                    rows="5"
+                                    placeholder="Quick, thing of something to say!"
+                                    required>
+                                </textarea>
+
+
+                            </div>
+
+                            <div class="flex justify-end mt-6 pt-6 border-t border-gray-200">
+                                <button type="submit"
+                                 class="bg-blue-500 text-white uppercase font-semibold text-xs py-2 px-10 rounded-2xl hover:bg-blue-600">Post</button>
+                            </div>
+                        </form>
+
+                    </x-panel>
+```
+
+Creamos una nueva vista en `components`, con el nombre `panel.blade.php`
+
+```html
+<div {{ $attributes(['class' => 'border border-gray-200 p-6 rounded-xl']) }}>
+    {{ $slot }}
+</div>
+
+Y por último identamos el código de la vista `post-comment.blade.php` dentro del `panel.blade.php`, mostrando de así
+
+```html
+@props(['comment'])
+
+<x-panel class="bg-gray-50">
+    <article class="flex space-x-4">
+        <div class="flex-shrink-0">
+            <img src="https://i.pravatar.cc/60?u={{ $comment->user_id }}" alt="" width="60" height="60" class="rounded-xl">
+        </div>
+
+        <div>
+            <header class="mb-4">
+                <h3 class="font-bold">{{ $comment->author->username }}</h3>
+
+                <p class="text-xs">
+                    Posted
+                    <time>{{ $comment->created_at }}</time>
+                </p>
+            </header>
+
+            <p>
+                {{ $comment->body }}
+            </p>
+        </div>
+    </article>
+</x-panel>
+```
 
 ##
