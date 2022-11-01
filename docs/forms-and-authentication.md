@@ -125,5 +125,17 @@ Route::get('register', [RegisterController::class, 'create'])->middleware('guest
 Route::post('register', [RegisterController::class, 'store'])->middleware('guest');
 ```
 
-##
+## Automatic Password Hashing With Mutators
 
+Aprovecharemos los mutadores de Eloquent para asegurarnos de que las contraseñas siempre se codifican antes de que se conserve. En este capitulo de encriptan la contraseñas. 
+
+Para eso agregaremos la función `setPasswordAttribute` al modelo `User.php`
+
+```php 
+ public function setPasswordAttribute($password)
+    {
+        $this->attributes['password'] = bcrypt($password);
+    }
+```
+
+##
