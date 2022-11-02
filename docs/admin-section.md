@@ -187,6 +187,8 @@ Route::post('admin/posts', [PostController::class, 'store'])->middleware('admin'
 
 ## Validate and Store Post Thumbnails
 
+En este video, aprenderá cómo cargar imágenes en su disco local utilizando una entrada de archivo estándar y la clase UploadedFile de Laravel. ¡Es tan fácil!
+
 El controlador de publicación `PostController` se agrega el siguiente atributo para la versión reducida de la imagen. 
 
 
@@ -365,4 +367,138 @@ En la carpeta config, modificamos el archivo filesystems, haciendo lo público
 
     'default' => env('FILESYSTEM_DRIVER', 'public'),
 
-## 
+## Extract Form-Specific Blade Components
+
+ Aprenderemos cómo limpiar el HTML de un formulario extrayendo una serie de "piezas" reutilizables que se pueden usar para construir cada sección. Por supuesto, usaremos componentes Blade para permitir esto
+
+Vamos a crear una vista para cada componente del formulario, asi gestionar un código limpio y reutilizable. 
+
+Primero vamos a crear una carpeta llamada form, en el folder de component, de las vistas del proyecto. 
+Dentro del nuevo folder creado, comenzaremos agregar las vistas. 
+
+Primero creamos -->`button.blade.php`
+
+```html
+<x-form.field> botón ---guardar --crear
+    <button type="submit"
+            class="bg-blue-500 text-white uppercase font-semibold text-xs py-2 px-10 rounded-2xl hover:bg-blue-600"
+    >
+        {{ $slot }}
+    </button>
+</x-form.field>
+```
+
+---> `error.blade.php` --mensaje 
+
+```html
+@props(['name'])
+
+@error($name)
+    <p class="text-red-500 text-xs mt-2">{{ $message }}</p>
+@enderror
+```
+
+---> `field.blade.php` 
+
+```html
+<div class="mt-6">
+    {{ $slot }}
+</div>
+```
+
+---> `input.blade.php`
+
+```html 
+@props(['name', 'type' => 'text'])
+
+<x-form.field>
+    <x-form.label name="{{ $name }}"/>
+
+    <input class="border border-gray-400 p-2 w-full"
+           type="{{ $type }}"
+           name="{{ $name }}"
+           id="{{ $name }}"
+           value="{{ old($name) }}"
+           required
+    >
+
+    <x-form.error name="{{ $name }}"/>
+</x-form.field>
+```
+
+---> `label.blade.php`
+
+```html
+@props(['name'])
+
+<label class="block mb-2 uppercase font-bold text-xs text-gray-700"
+       for="{{ $name }}"
+>
+    {{ ucwords($name) }}
+</label>
+```
+
+---> `textarea.blade.php`
+
+```html
+@props(['name'])
+
+<x-form.field>
+    <x-form.label name="{{ $name }}" />
+
+    <textarea
+        class="border border-gray-400 p-2 w-full"
+        name="{{ $name }}"
+        id="{{ $name }}"
+        required
+    >{{ old($name) }}</textarea>
+
+    <x-form.error name="{{ $name }}" />
+</x-form.field>
+```
+
+Se modifica la vista `_add-comment-form.blade.php`, se encuentra en la carpeta posts, en vistas. 
+
+```html
+ <x-form.button>Submit</x-form.button>
+ ```
+
+ Y por último se modifica la vista `create.blade.php`, que se encuentra en la carpeta posts, agregando las directivas de las vistas del los componentes para el formulario de publicaciones. 
+
+ ```html
+ <x-layout>
+
+    <section class="py-8 max-w-md mx-auto">
+        <h1 class="text-lg font-bold mb-4">
+            Publish New Post
+        </h1>
+
+        <x-panel>
+            <form method="POST" action="/admin/posts" enctype="multipart/form-data">
+                @csrf
+
+                <x-form.input name="title" />
+                <x-form.input name="slug" />
+                <x-form.input name="thumbnail" type="file" />
+                <x-form.textarea name="excerpt" />
+                <x-form.textarea name="body" />
+                <x-form.field>
+                    <x-form.label name="category" />
+
+                    <select name="category_id" id="category_id">
+                        @foreach (\App\Models\Category::all() as $category)
+                            <option value="{{ $category->id }}"
+                                {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                                {{ ucwords($category->name) }}</option>
+                        @endforeach
+                    </select>
+                    <x-form.error name="category" />
+                </x-form.field>
+                <x-form.button>Publish</x-form.button>
+            </form>
+        </x-panel>
+    </section>
+</x-layout>
+```
+
+##
