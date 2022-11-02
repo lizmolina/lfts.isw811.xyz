@@ -214,4 +214,49 @@ Ahora implementamos la ruta de enlace, recuerde importar las referencias a la cl
 ```php
 Route::post('newsletter', NewsletterController::class);
 ```
-## 
+
+## Toy Chests and Contracts
+
+En este episodio se modifica los Services, se crea  un archivo nuevo llamado `MailchimpNewsletter.php`
+
+```php
+<?php
+
+namespace App\Services;
+
+use MailchimpMarketing\ApiClient;
+
+class MailchimpNewsletter implements Newsletter
+{
+    public function __construct(protected ApiClient $client)
+    {
+        //
+    }
+
+    public function subscribe(string $email, string $list = null)
+    {
+        $list ??= config('services.mailchimp.lists.subscribers');
+
+        return $this->client->lists->addListMember($list, [
+            'email_address' => $email,
+            'status' => 'subscribed'
+        ]);
+    }
+}
+```
+
+Luego se modifica `Newsletter.php` 
+
+```php
+<?php
+
+namespace App\Services;
+
+interface Newsletter
+{
+
+public function subscribe(string $email, string $list = null);
+
+}
+```
+
