@@ -730,4 +730,10 @@ Modificamos la vista `create.blade` de la carpeta posts
 
 ```
 
-## 
+## Create a Form to Edit and Delete Posts
+
+Falta una característica evidente que debemos implementar: cualquier publicación puede editarse o eliminarse. Trabajaremos para permitir eso en este episodio.
+
+## Group and Store Validation Logic
+
+Notará que nuestra lógica de validación del controlador ahora se ha duplicado en su mayoría. En esta lección, discutiremos los pros y los contras de mantener esa duplicación, antes de aprender a normalizarla y extraerla en un método reutilizable.
