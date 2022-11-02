@@ -184,7 +184,185 @@ Y agregamos las rutas para acceder al formulario creado, en `web.php`
 Route::get('admin/posts/create', [PostController::class, 'create'])->middleware('admin');
 Route::post('admin/posts', [PostController::class, 'store'])->middleware('admin');
 ```
-##
+
+## Validate and Store Post Thumbnails
+
+El controlador de publicación `PostController` se agrega el siguiente atributo para la versión reducida de la imagen. 
 
 
+    'thumbnail' => 'required|image',
 
+    $attributes['thumbnail'] = request()->file('thumbnail')->store('thumbnails');
+
+Para quedar en función store(),  del siguiente modo. 
+
+```php
+ public function store()
+    {
+        $attributes = request()->validate([
+            'title' => 'required',
+            'thumbnail' => 'required|image',
+            'slug' => ['required', Rule::unique('posts', 'slug')],
+            'excerpt' => 'required',
+            'body' => 'required',
+            'category_id' => ['required', Rule::exists('categories', 'id')]
+        ]);
+
+        $attributes['user_id'] = auth()->id();
+        $attributes['thumbnail'] = request()->file('thumbnail')->store('thumbnails');
+
+        Post::create($attributes);
+
+        return redirect('/');
+    }
+```
+
+Se actualiza la vista `create.blade.php`
+
+```html
+<x-layout>
+
+    <section class="py-8 max-w-md mx-auto">
+        <h1 class="text-lg font-bold mb-4">
+            Publish New Post
+        </h1>
+
+        <x-panel>
+            <form method="POST" action="/admin/posts" enctype="multipart/form-data">
+                @csrf
+
+                <div class="mb-6">
+                    <label class="block mb-2 uppercase font-bold text-xs text-gray-700"
+                           for="title"
+                    >
+                        Title
+                    </label>
+                    <input class="border border-gray-400 p-2 w-full"
+                           type="text"
+                           name="title"
+                           id="title"
+                           value="{{ old('title') }}"
+                           required
+                    >
+                    @error('title')
+                        <p class="text-red-500 text-xs mt-2">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div class="mb-6">
+                    <label class="block mb-2 uppercase font-bold text-xs text-gray-700"
+                           for="slug"
+                    >
+                        Slug
+                    </label>
+                    <input class="border border-gray-400 p-2 w-full"
+                           type="text"
+                           name="slug"
+                           id="slug"
+                           value="{{ old('slug') }}"
+                           required
+                    >
+                    @error('slug')
+                        <p class="text-red-500 text-xs mt-2">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="mb-6">
+                    <label class="block mb-2 uppercase font-bold text-xs text-gray-700"
+                           for="thumbnail"
+                    >
+                        Thumbnail
+                    </label>
+
+                    <input class="border border-gray-400 p-2 w-full"
+                           type="file"
+                           name="thumbnail"
+                           id="thumbnail"
+                           required
+                    >
+
+                    @error('thumbnail')
+                        <p class="text-red-500 text-xs mt-2">{{ $message }}</p>
+                    @enderror
+                </div>
+
+
+                <div class="mb-6">
+                    <label class="block mb-2 uppercase font-bold text-xs text-gray-700"
+                           for="excerpt"
+                    >
+                        Excerpt
+                    </label>
+                    <textarea class="border border-gray-400 p-2 w-full"
+                           name="excerpt"
+                           id="excerpt"
+                           required
+                    >{{ old('excerpt') }}</textarea>
+                    @error('excerpt')
+                        <p class="text-red-500 text-xs mt-2">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div class="mb-6">
+                    <label class="block mb-2 uppercase font-bold text-xs text-gray-700"
+                           for="body"
+                    >
+                        Body
+                    </label>
+                    <textarea class="border border-gray-400 p-2 w-full"
+                           name="body"
+                           id="body"
+                           required
+                    >{{ old('body') }}</textarea>
+                    @error('body')
+                        <p class="text-red-500 text-xs mt-2">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div class="mb-6">
+                    <label class="block mb-2 uppercase font-bold text-xs text-gray-700"
+                           for="category_id"
+                    >
+                        Category
+                    </label>
+                    <select name="category_id" id="category_id">
+                        @foreach (\App\Models\Category::all() as $category)
+                            <option
+                                value="{{ $category->id }}"
+                                {{ old('category_id') == $category->id ? 'selected' : '' }}
+                            >{{ ucwords($category->name) }}</option>
+                        @endforeach
+                    </select>
+                    @error('category')
+                        <p class="text-red-500 text-xs mt-2">{{ $message }}</p>
+                    @enderror
+                </div>
+                <x-submit-button>Publish</x-submit-button>
+            </form>
+        </x-panel>
+    </section>
+</x-layout>
+```
+
+Se actualiza la ruta de las vistas, para mostrar la nueva imagen minuatura, en las siguientes vistas del component.
+
+    show.blade.php
+    post-featured-card.blade.php
+    post-card.blade.php
+
+```html
+  <img src="{{ asset('storage/' . $post->thumbnail) }}" alt="" class="rounded-xl">
+```
+
+Se agrega el nuevo atributo a las migraciones, en especifico `create_posts_table`
+
+    $table->string('thumbnail')->nullable();
+
+
+Y se refresca las migraciones en la base de datos, dentro de la maquina virtual vagrant. 
+
+    php artisan migrate:fresh --seed
+
+
+En la carpeta config, modificamos el archivo filesystems, haciendo lo público
+
+    'default' => env('FILESYSTEM_DRIVER', 'public'),
+
+## 
