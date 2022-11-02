@@ -1,3 +1,4 @@
+
 <?php
 
 namespace App\Http\Middleware;
@@ -11,12 +12,16 @@ class MustBeAdministrator
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
-     * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
+     * @param \Illuminate\Http\Request $request
+     * @param \Closure $next
+     * @return mixed
      */
     public function handle(Request $request, Closure $next)
     {
+        if (auth()->user()?->username !== 'JeffreyWay') {
+            abort(Response::HTTP_FORBIDDEN);
+        }
+
         return $next($request);
     }
 }
