@@ -21,3 +21,4 @@
 [Comments](./docs/comments.md)
 [Newsletters and APIs](./docs/newsletters-and-apis.md)
 [Admin Section](./docs/admin-section.md)
+[Conclusion](./docs/conclusion.md)
