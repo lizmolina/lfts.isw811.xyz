@@ -1,7 +1,9 @@
 <?php
 
 namespace App\Services;
-use MailchimpMarketing\ApiClient;
+
+
+
 
 
 interface Newsletter

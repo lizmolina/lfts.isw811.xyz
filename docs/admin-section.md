@@ -734,6 +734,423 @@ Modificamos la vista `create.blade` de la carpeta posts
 
 Falta una característica evidente que debemos implementar: cualquier publicación puede editarse o eliminarse. Trabajaremos para permitir eso en este episodio.
 
+En este espisodio aprederemos a rellenar formularios de edición y actualizar la reglas de validación. Para esto haremos lo siguiente:
+
+Crearemos un nuevo controllador llamado `AdminPostController`, que funcionara para el registro de nuevos publicaciones del administrador. 
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Post;
+use Illuminate\Validation\Rule;
+
+class AdminPostController extends Controller
+{
+    public function index()
+    {
+        return view('admin.posts.index', [
+            'posts' => Post::paginate(50)
+        ]);
+    }
+
+    public function create()
+    {
+        return view('admin.posts.create');
+    }
+
+    public function store()
+    {
+        $attributes = request()->validate([
+            'title' => 'required',
+            'thumbnail' => 'required|image',
+            'slug' => ['required', Rule::unique('posts', 'slug')],
+            'excerpt' => 'required',
+            'body' => 'required',
+            'category_id' => ['required', Rule::exists('categories', 'id')]
+        ]);
+
+        $attributes['user_id'] = auth()->id();
+        $attributes['thumbnail'] = request()->file('thumbnail')->store('thumbnails');
+
+        Post::create($attributes);
+
+        return redirect('/');
+    }
+
+    public function edit(Post $post)
+    {
+        return view('admin.posts.edit', ['post' => $post]);
+    }
+
+    public function update(Post $post)
+    {
+        $attributes = request()->validate([
+            'title' => 'required',
+            'thumbnail' => 'image',
+            'slug' => ['required', Rule::unique('posts', 'slug')->ignore($post->id)],
+            'excerpt' => 'required',
+            'body' => 'required',
+            'category_id' => ['required', Rule::exists('categories', 'id')]
+        ]);
+
+        if (isset($attributes['thumbnail'])) {
+            $attributes['thumbnail'] = request()->file('thumbnail')->store('thumbnails');
+        }
+
+        $post->update($attributes);
+
+        return back()->with('success', 'Post Updated!');
+    }
+
+    public function destroy(Post $post)
+    {
+        $post->delete();
+
+        return back()->with('success', 'Post Deleted!');
+    }
+}
+
+```
+
+Eliminamos la función de create() y store(), del controlador `PostController`
+
+En vistas creamos una nueva carpeta para admin, con un folder de post, en los cuales se crearan tres vistas. 
+
+----> La primera se llamara `create.blade`
+
+```html
+<x-layout>
+    <x-setting heading="Publish New Post">
+        <form method="POST" action="/admin/posts" enctype="multipart/form-data">
+            @csrf
+
+            <x-form.input name="title" required />
+            <x-form.input name="slug" required />
+            <x-form.input name="thumbnail" type="file" required />
+            <x-form.textarea name="excerpt" required />
+            <x-form.textarea name="body" required />
+
+            <x-form.field>
+                <x-form.label name="category"/>
+
+                <select name="category_id" id="category_id" required>
+                    @foreach (\App\Models\Category::all() as $category)
+                        <option
+                            value="{{ $category->id }}"
+                            {{ old('category_id') == $category->id ? 'selected' : '' }}
+                        >{{ ucwords($category->name) }}</option>
+                    @endforeach
+                </select>
+
+                <x-form.error name="category"/>
+            </x-form.field>
+
+            <x-form.button>Publish</x-form.button>
+        </form>
+    </x-setting>
+</x-layout>
+```
+---> Otra con el nombre `edit.blade` 
+
+```html
+<x-layout>
+    <x-setting :heading="'Edit Post: ' . $post->title">
+        <form method="POST" action="/admin/posts/{{ $post->id }}" enctype="multipart/form-data">
+            @csrf
+            @method('PATCH')
+
+            <x-form.input name="title" :value="old('title', $post->title)" required />
+            <x-form.input name="slug" :value="old('slug', $post->slug)" required />
+
+            <div class="flex mt-6">
+                <div class="flex-1">
+                    <x-form.input name="thumbnail" type="file" :value="old('thumbnail', $post->thumbnail)" />
+                </div>
+
+                <img src="{{ asset('storage/' . $post->thumbnail) }}" alt="" class="rounded-xl ml-6" width="100">
+            </div>
+
+            <x-form.textarea name="excerpt" required>{{ old('excerpt', $post->excerpt) }}</x-form.textarea>
+            <x-form.textarea name="body" required>{{ old('body', $post->body) }}</x-form.textarea>
+
+            <x-form.field>
+                <x-form.label name="category"/>
+
+                <select name="category_id" id="category_id" required>
+                    @foreach (\App\Models\Category::all() as $category)
+                        <option
+                            value="{{ $category->id }}"
+                            {{ old('category_id', $post->category_id) == $category->id ? 'selected' : '' }}
+                        >{{ ucwords($category->name) }}</option>
+                    @endforeach
+                </select>
+
+                <x-form.error name="category"/>
+            </x-form.field>
+
+            <x-form.button>Update</x-form.button>
+        </form>
+    </x-setting>
+</x-layout>
+```
+
+--->  Luego la última llamada `index.blade` estas funcionaran solamente para que el administrador cree nuevas publicaciones. 
+
+```html
+<x-layout>
+    <x-setting heading="Manage Posts">
+        <div class="flex flex-col">
+            <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                    <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach ($posts as $post)
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="text-sm font-medium text-gray-900">
+                                                    <a href="/posts/{{ $post->slug }}">
+                                                        {{ $post->title }}
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </td>
+
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <a href="/admin/posts/{{ $post->id }}/edit" class="text-blue-500 hover:text-blue-600">Edit</a>
+                                        </td>
+
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <form method="POST" action="/admin/posts/{{ $post->id }}">
+                                                @csrf
+                                                @method('DELETE')
+
+                                                <button class="text-xs text-gray-400">Delete</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </x-setting>
+</x-layout>
+```
+
+Recuerda cambiar las rutas que hacen llamados a las vista anteriores. 
+
+Agregamos la rutas en `web.php`
+
+```php
+Route::post('admin/posts', [AdminPostController::class, 'store'])->middleware('admin');
+Route::get('admin/posts/create', [AdminPostController::class, 'create'])->middleware('admin');
+Route::get('admin/posts', [AdminPostController::class, 'index'])->middleware('admin');
+Route::get('admin/posts/{post}/edit', [AdminPostController::class, 'edit'])->middleware('admin');
+Route::patch('admin/posts/{post}', [AdminPostController::class, 'update'])->middleware('admin');
+Route::delete('admin/posts/{post}', [AdminPostController::class, 'destroy'])->middleware('admin');
+
+```
+
 ## Group and Store Validation Logic
 
 Notará que nuestra lógica de validación del controlador ahora se ha duplicado en su mayoría. En esta lección, discutiremos los pros y los contras de mantener esa duplicación, antes de aprender a normalizarla y extraerla en un método reutilizable.
+
+Aprenderemos a normalizar reglas de validación y quitar la duplicación. 
+
+Para esto trabajaremos con el controlador `AdminPostController`, modificaremos funciones y agregaremos nuevas. 
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Post;
+use Illuminate\Validation\Rule;
+
+class AdminPostController extends Controller
+{
+    public function index()
+    {
+        return view('admin.posts.index', [
+            'posts' => Post::paginate(50)
+        ]);
+    }
+
+    public function create()
+    {
+        return view('admin.posts.create');
+    }
+
+    public function store()
+    {
+        Post::create(array_merge($this->validatePost(), [
+            'user_id' => request()->user()->id,
+            'thumbnail' => request()->file('thumbnail')->store('thumbnails')
+        ]));
+
+        return redirect('/');
+    }
+
+    public function edit(Post $post)
+    {
+        return view('admin.posts.edit', ['post' => $post]);
+    }
+
+    public function update(Post $post)
+    {
+        $attributes = $this->validatePost($post);
+
+        if ($attributes['thumbnail'] ?? false) {
+            $attributes['thumbnail'] = request()->file('thumbnail')->store('thumbnails');
+        }
+
+        $post->update($attributes);
+
+        return back()->with('success', 'Post Updated!');
+    }
+
+    public function destroy(Post $post)
+    {
+        $post->delete();
+
+        return back()->with('success', 'Post Deleted!');
+    }
+
+    protected function validatePost(?Post $post = null): array
+    {
+        $post ??= new Post();
+
+        return request()->validate([
+            'title' => 'required',
+            'thumbnail' => $post->exists ? ['image'] : ['required', 'image'],
+            'slug' => ['required', Rule::unique('posts', 'slug')->ignore($post)],
+            'excerpt' => 'required',
+            'body' => 'required',
+            'category_id' => ['required', Rule::exists('categories', 'id')]
+        ]);
+    }
+}
+```
+
+## All About Authorization
+
+¿Se dio cuenta de que cualquier persona que haya iniciado sesión verá enlaces específicos del administrador dentro de la barra de navegación desplegable? ¿Cómo podríamos arreglar eso? Parece que tendremos que modificar un poco nuestra autorización.
+
+Aprenderemos puertas, directivas de autorización de cuchillas, grupos de rutas  y 
+recursos de ruta
+
+En este episodio eliminaremos el Middleware `MustBeAdministrator, recuerde eliminar las instancias colocadas anteriormente. 
+
+```php
+ protected $routeMiddleware = [
+        'auth' => \App\Http\Middleware\Authenticate::class,
+        'admin' => MustBeAdministrator::class, ----Esta
+        'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
+        'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
+        'can' => \Illuminate\Auth\Middleware\Authorize::class,
+```
+
+Modificamos la clase `AppServiceProvider`, de la carpeta Providers
+
+```php
+<?php
+
+namespace App\Providers;
+
+use App\Services\Newsletter;
+use App\Services\MailchimpNewsletter;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\ServiceProvider;
+use MailchimpMarketing\ApiClient;
+use App\Models\User;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Gate;
+
+class AppServiceProvider extends ServiceProvider
+{
+        /**
+     * Register any application services.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        app()->bind(Newsletter::class, function () {
+            $client = (new ApiClient)->setConfig([
+                'apiKey' => config('services.mailchimp.key'),
+                'server' => 'us21'
+            ]);
+
+            return new MailchimpNewsletter($client);
+        });
+    }
+
+    /**
+     * Bootstrap any application services.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        Model::unguard();
+
+        Gate::define('admin', function (User $user) {
+            return $user->username === 'emolina';
+        });
+
+        Blade::if('admin', function () {
+
+            return optional(request()->user())->can('admin');
+
+            //return request()->user()?->can('admin');
+        });
+    }
+
+
+
+}
+```
+
+Modificamos la rutas en `web.php`, las agrupamos para que solo las pueda ver el administrador
+
+```php
+
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\SessionsController;
+use App\Http\Controllers\AdminPostController;
+use App\Http\Controllers\NewsletterController;
+use App\Http\Controllers\PostCommentsController;
+
+
+Route::get('/', [PostController::class, 'index'])->name('home');
+
+Route::get('posts/{post:slug}', [PostController::class, 'show']);
+Route::post('posts/{post:slug}/comments', [PostCommentsController::class, 'store']);
+
+Route::post('newsletter', NewsletterController::class);
+
+Route::get('register', [RegisterController::class, 'create'])->middleware('guest');
+Route::post('register', [RegisterController::class, 'store'])->middleware('guest');
+
+Route::get('login', [SessionsController::class, 'create'])->middleware('guest');
+Route::post('login', [SessionsController::class, 'store'])->middleware('guest');
+
+Route::post('logout', [SessionsController::class, 'destroy'])->middleware('auth');
+
+// Admin Section
+Route::middleware('can:admin')->group(function () {
+    Route::resource('admin/posts', AdminPostController::class)->except('show');
+});
+
+```
+
